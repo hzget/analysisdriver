@@ -7,13 +7,16 @@ import (
 	"os"
 	"time"
 
+	pb "github.com/hzget/analysisdriver"
 	"google.golang.org/grpc"
-    pb "github.com/hzget/analysisdriver"
 )
 
 const (
-	address     = "192.168.1.12:50051"
+	//address     = "192.168.1.12:50051"
+	address     = "localhost:50051"
 	defaultName = "abc"
+	id          = 123
+	text        = "let's play tennis"
 )
 
 func main() {
@@ -24,7 +27,7 @@ func main() {
 	}
 	defer conn.Close()
 
-    c := pb.NewDataAnalysisClient(conn)
+	c := pb.NewDataAnalysisClient(conn)
 	name := defaultName
 	if len(os.Args) > 1 {
 		name = os.Args[1]
@@ -39,4 +42,18 @@ func main() {
 	}
 
 	log.Printf("Analysis result: %d\n", r.GetScore())
+
+	r2, err := c.AnalyzeByPostId(ctx, &pb.Id{Id: id})
+	if err != nil {
+		log.Fatalf("could not analyze: %v", err)
+	}
+
+	log.Printf("AnalysisByPostId result: %s\n", r2.GetResult())
+
+	r3, err := c.AnalyzePost(ctx, &pb.Text{Text: text})
+	if err != nil {
+		log.Fatalf("could not analyze: %v", err)
+	}
+
+	log.Printf("AnalysisPost result: %s\n", r3.GetResult())
 }
